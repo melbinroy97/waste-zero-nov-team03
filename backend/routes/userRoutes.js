@@ -1,15 +1,11 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
+const authMiddleware = require('../middleware/authMiddleware');
+const { getMe, updateMe, changePassword } = require('../controllers/userController');
 
-const { protect } = require("../middleware/authMiddleware");
-const {
-  getMe,
-  updateMe,
-  changePassword,
-} = require("../controllers/userController");
-
-router.get("/me", protect, getMe);
-router.put("/me", protect, updateMe);
-router.put("/change-password", protect, changePassword);
+// All routes below are protected
+router.get('/me', authMiddleware, getMe);
+router.put('/me', authMiddleware, updateMe);
+router.put('/change-password', authMiddleware, changePassword);
 
 module.exports = router;
