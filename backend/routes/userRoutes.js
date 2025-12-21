@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
-const { getMe, updateMe } = require('../controllers/userController');
+const { getMe, updateMe, changePassword } = require('../controllers/userController');
 
 // All routes below are protected
 router.get('/me', authMiddleware, getMe);
 router.put('/me', authMiddleware, updateMe);
+router.put('/change-password', authMiddleware, changePassword);
 
 module.exports = router;

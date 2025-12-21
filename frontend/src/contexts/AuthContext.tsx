@@ -1,14 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import type { User, UserRole } from '@/types';
-import { getCurrentUser, refreshToken } from '@/lib/api';
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import type { User } from "@/types";
+import { getCurrentUser, loginUser, registerUser } from "@/lib/api";
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (role: UserRole) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (data: any) => Promise<void>;
   logout: () => void;
-  switchRole: (role: UserRole) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,15 +17,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadUser = useCallback(async (role?: UserRole) => {
+  // LOAD CURRENT USER
+  const loadUser = useCallback(async () => {
     try {
       setIsLoading(true);
-      const storedRole = role || (localStorage.getItem('userRole') as UserRole) || 'volunteer';
-      const userData = await getCurrentUser(storedRole);
+      const userData = await getCurrentUser();
       setUser(userData);
-      localStorage.setItem('userRole', userData.role);
-    } catch (error) {
-      console.error('Failed to load user:', error);
+    } catch {
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -33,36 +31,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    if (isLoggedIn) {
-      loadUser();
-    } else {
-      setIsLoading(false);
-    }
-
-    // Token refresh interval
-    const refreshInterval = setInterval(async () => {
-      if (localStorage.getItem('isLoggedIn') === 'true') {
-        await refreshToken();
-      }
-    }, 5 * 60 * 1000); // Refresh every 5 minutes
-
-    return () => clearInterval(refreshInterval);
+    const token = localStorage.getItem("token");
+    if (token) loadUser();
+    else setIsLoading(false);
   }, [loadUser]);
 
-  const login = async (role: UserRole) => {
-    localStorage.setItem('isLoggedIn', 'true');
-    await loadUser(role);
+  // LOGIN FUNCTION
+  const login = async (email: string, password: string) => {
+     console.log("LOGIN FUNCTION CALLED", email);
+    const res = await loginUser(email, password);
+    console.log("LOGIN API RESPONSE", res);
+    if (!res?.token || !res?.user) {
+    throw new Error("Invalid login response");
+  }
+    localStorage.setItem("token", res.token);
+    setUser(res.user);
+  };
+
+  // REGISTER FUNCTION
+  const register = async (data: any) => {
+    const res = await registerUser(data);
+    localStorage.setItem("token", res.token);
+    setUser(res.user);
   };
 
   const logout = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('userRole');
+    localStorage.removeItem("token");
     setUser(null);
-  };
-
-  const switchRole = async (role: UserRole) => {
-    await loadUser(role);
   };
 
   return (
@@ -72,8 +67,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         isAuthenticated: !!user,
         login,
+        register,
         logout,
-        switchRole,
       }}
     >
       {children}
@@ -82,9 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 }

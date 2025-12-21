@@ -1,165 +1,135 @@
-import type { User, Opportunity, Application, Message, Pickup, Metrics, RecyclingCategory } from '@/types';
+import type { User } from "@/types";
 
-// Simulated API delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:2000/api";
 
-// Mock data
-const mockVolunteerUser: User = {
-  id: '1',
-  email: 'volunteer.green@email.com',
-  name: 'Volunteer',
-  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
-  role: 'volunteer',
-  location: 'Mumbai, India',
-  skills: ['Sorting', 'Driving', 'Community Outreach'],
-  bio: 'Passionate about reducing waste and building a sustainable future.',
-  createdAt: '2024-01-15',
+// Helper to get JWT token
+function getToken() {
+  return localStorage.getItem("token");
+}
+
+
+
+function authHeaders() {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+}
+
+
+// LOGIN USER
+export async function loginUser(email: string, password: string) {
+  const res = await fetch(`${API_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!res.ok) throw new Error("Login failed");
+  return res.json(); // { token, user }
+}
+
+// REGISTER USER
+export async function registerUser(data: any) {
+  const res = await fetch(`${API_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error("Registration failed");
+  return res.json();
+}
+
+// FETCH CURRENT USER
+export async function getCurrentUser(): Promise<User> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${API_URL}/users/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) throw new Error("Failed to fetch user");
+  return (await res.json()).user;
+}
+
+export async function refreshToken() {
+  return { success: true }; // Optional
+}
+
+
+
+
+// =======================================
+// TEMP DASHBOARD API STUBS (Milestone 1)
+// Prevents runtime crashes
+// Replace with real APIs in Milestone 2
+// =======================================
+
+// VOLUNTEER DASHBOARD
+export async function getApplications() {
+  return [];
+}
+
+export async function getMessages() {
+  return [];
+}
+
+export async function getUpcomingPickups() {
+  return [];
+}
+
+// NGO + VOLUNTEER DASHBOARD
+export async function getOpportunities() {
+  return [];
+}
+
+export async function getMetrics() {
+  return {
+    totalPickups: 0,
+    pickupsTrend: 0,
+    itemsRecycled: 0,
+    itemsTrend: 0,
+    volunteerHours: 0,
+    hoursTrend: 0,
+    co2Saved: 0,
+    co2Trend: 0,
+  };
+}
+
+export async function getRecyclingBreakdown() {
+  return [];
+}
+
+
+
+//EDIT USER PROFILE
+
+export const getMyProfile = async () => {
+  const res = await fetch(`${API_URL}/users/me`, {
+    headers: authHeaders(),
+  });
+  return res.json();
 };
 
-const mockNgoUser: User = {
-  id: '2',
-  email: 'contact@greenearth.org',
-  name: 'NGO Green Earth',
-  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
-  role: 'ngo',
-  location: 'Bangalore, India',
-  organizationName: 'Green Earth Foundation',
-  bio: 'Leading environmental conservation efforts since 2015.',
-  createdAt: '2023-06-20',
+export const updateMyProfile = async (data: any) => {
+  const res = await fetch(`${API_URL}/users/me`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  });
+  return res.json();
 };
 
-const mockOpportunities: Opportunity[] = [
-  {
-    id: '1',
-    title: 'Community Recycling Drive',
-    description: 'Help sort and process recyclables at our monthly community drive.',
-    location: 'Downtown Community Center',
-    date: '2024-12-15',
-    status: 'open',
-    ngoId: '2',
-    ngoName: 'Green Earth Foundation',
-    requiredSkills: ['Sorting', 'Lifting'],
-    applicationsCount: 12,
-    createdAt: '2024-11-01',
-  },
-  {
-    id: '2',
-    title: 'Beach Cleanup Initiative',
-    description: 'Join us for a day of cleaning up our local beaches.',
-    location: 'Ocean Beach',
-    date: '2024-12-20',
-    status: 'open',
-    ngoId: '2',
-    ngoName: 'Green Earth Foundation',
-    requiredSkills: ['Outdoor Work', 'Team Player'],
-    applicationsCount: 8,
-    createdAt: '2024-11-05',
-  },
-];
-
-const mockApplications: Application[] = [];
-
-const mockMessages: Message[] = [
-  {
-    id: '1',
-    senderId: '2',
-    senderName: 'Green Earth Foundation',
-    senderAvatar: 'https://api.dicebear.com/7.x/initials/svg?seed=GE',
-    content: 'Thanks for your interest in volunteering! We have new opportunities available.',
-    timestamp: '2024-12-05T10:30:00Z',
-    read: false,
-  },
-  {
-    id: '2',
-    senderId: '3',
-    senderName: 'EcoWarriors',
-    senderAvatar: 'https://api.dicebear.com/7.x/initials/svg?seed=EW',
-    content: 'Your application has been reviewed. Looking forward to working with you!',
-    timestamp: '2024-12-04T15:45:00Z',
-    read: true,
-  },
-];
-
-const mockPickups: Pickup[] = [
-  {
-    id: '1',
-    location: '123 Green Street, San Francisco',
-    date: '2024-12-10',
-    time: '09:00 AM',
-    status: 'scheduled',
-    itemsCount: 45,
-    volunteerId: '1',
-    volunteerName: 'Volunteer',
-  },
-  {
-    id: '2',
-    location: 'Mumbai Central Park',
-    date: '2024-12-12',
-    time: '02:00 PM',
-    status: 'scheduled',
-    itemsCount: 32,
-  },
-];
-
-const mockMetrics: Metrics = {
-  totalPickups: 127,
-  pickupsTrend: 12,
-  itemsRecycled: 3420,
-  itemsTrend: 8,
-  volunteerHours: 256,
-  hoursTrend: -3,
-  co2Saved: 1.8,
-  co2Trend: 15,
+export const changePassword = async (data: any) => {
+  const res = await fetch(`${API_URL}/users/change-password`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  });
+  return res.json();
 };
-
-const mockRecyclingBreakdown: RecyclingCategory[] = [
-  { name: 'Plastics', count: 1250, percentage: 37, color: 'hsl(199 89% 48%)' },
-  { name: 'Paper', count: 980, percentage: 29, color: 'hsl(38 92% 50%)' },
-  { name: 'Glass', count: 650, percentage: 19, color: 'hsl(142 55% 42%)' },
-  { name: 'Metals', count: 340, percentage: 10, color: 'hsl(280 65% 55%)' },
-  { name: 'Electronics', count: 200, percentage: 5, color: 'hsl(0 72% 51%)' },
-];
-
-// API functions with simulated delays
-export async function getCurrentUser(role?: UserRole): Promise<User> {
-  await delay(800);
-  return role === 'ngo' ? mockNgoUser : mockVolunteerUser;
-}
-
-export async function getOpportunities(): Promise<Opportunity[]> {
-  await delay(1000);
-  return mockOpportunities;
-}
-
-export async function getApplications(): Promise<Application[]> {
-  await delay(900);
-  return mockApplications;
-}
-
-export async function getMessages(): Promise<Message[]> {
-  await delay(700);
-  return mockMessages;
-}
-
-export async function getUpcomingPickups(): Promise<Pickup[]> {
-  await delay(850);
-  return mockPickups;
-}
-
-export async function getMetrics(): Promise<Metrics> {
-  await delay(600);
-  return mockMetrics;
-}
-
-export async function getRecyclingBreakdown(): Promise<RecyclingCategory[]> {
-  await delay(750);
-  return mockRecyclingBreakdown;
-}
-
-export async function refreshToken(): Promise<{ success: boolean }> {
-  await delay(500);
-  return { success: true };
-}
-
-// Type export for role
-type UserRole = 'volunteer' | 'ngo';
