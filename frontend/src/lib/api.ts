@@ -130,6 +130,15 @@ const mockMessages: Message[] = [
     timestamp: '2024-12-05T10:30:00Z',
     read: false,
   },
+  {
+    id: '2',
+    senderId: '3',
+    senderName: 'EcoWarriors',
+    senderAvatar: 'https://api.dicebear.com/7.x/initials/svg?seed=EW',
+    content: 'Your application has been reviewed. Looking forward to working with you!',
+    timestamp: '2024-12-04T15:45:00Z',
+    read: true,
+  },
 ];
 
 const mockPickups: Pickup[] = [
@@ -142,6 +151,14 @@ const mockPickups: Pickup[] = [
     itemsCount: 45,
     volunteerId: '1',
     volunteerName: 'Volunteer',
+  },
+  {
+    id: '2',
+    location: 'Mumbai Central Park',
+    date: '2024-12-12',
+    time: '02:00 PM',
+    status: 'scheduled',
+    itemsCount: 32,
   },
 ];
 
@@ -193,3 +210,4 @@ export async function refreshToken(): Promise<{ success: boolean }> {
   await delay(500);
   return { success: true };
 }
+
