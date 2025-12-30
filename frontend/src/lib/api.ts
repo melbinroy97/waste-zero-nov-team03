@@ -1,61 +1,122 @@
 import type { User, Opportunity, Application, Message, Pickup, Metrics, RecyclingCategory } from '@/types';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:2000/api';
+
+const getHeaders = () => {
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
+
+// --- AUTH ---
+export async function loginUser(email, password) {
+  const res = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || 'Login failed');
+  }
+  return res.json();
+}
+
+export async function registerUser(data) {
+  const res = await fetch(`${API_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || 'Registration failed');
+  }
+  return res.json();
+}
+
+export async function getCurrentUser() {
+  const res = await fetch(`${API_URL}/users/me`, {
+    headers: getHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch user');
+  return res.json();
+}
+
+export async function updateMyProfile(data: Partial<User>) {
+  const res = await fetch(`${API_URL}/users/me`, {
+    method: 'PUT',
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update profile');
+  return res.json();
+}
+
+export async function changePassword(data: any) {
+  const res = await fetch(`${API_URL}/users/change-password`, {
+    method: 'PUT',
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to change password');
+  return res.json();
+}
+
+// --- OPPORTUNITIES ---
+export async function getOpportunities(): Promise<Opportunity[]> {
+  const res = await fetch(`${API_URL}/opportunities`, {
+    headers: getHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch opportunities');
+  const json = await res.json();
+  return json.data || [];
+}
+
+export async function getOpportunityById(id: string): Promise<Opportunity> {
+  const res = await fetch(`${API_URL}/opportunities/${id}`, {
+    headers: getHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch opportunity');
+  const json = await res.json();
+  return json.data;
+}
+
+export async function createOpportunity(data: Partial<Opportunity>) {
+  const res = await fetch(`${API_URL}/opportunities`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create opportunity');
+  return res.json();
+}
+
+export async function updateOpportunity(id: string, data: Partial<Opportunity>) {
+  const res = await fetch(`${API_URL}/opportunities/${id}`, {
+    method: 'PUT',
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update opportunity');
+  return res.json();
+}
+
+export async function deleteOpportunity(id: string) {
+  const res = await fetch(`${API_URL}/opportunities/${id}`, {
+    method: 'DELETE',
+    headers: getHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to delete opportunity');
+  return res.json();
+}
+
+// --- MOCKS (For unimplemented backend features) ---
+
 // Simulated API delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-// Mock data
-const mockVolunteerUser: User = {
-  id: '1',
-  email: 'volunteer.green@email.com',
-  name: 'Volunteer',
-  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
-  role: 'volunteer',
-  location: 'Mumbai, India',
-  skills: ['Sorting', 'Driving', 'Community Outreach'],
-  bio: 'Passionate about reducing waste and building a sustainable future.',
-  createdAt: '2024-01-15',
-};
-
-const mockNgoUser: User = {
-  id: '2',
-  email: 'contact@greenearth.org',
-  name: 'NGO Green Earth',
-  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
-  role: 'ngo',
-  location: 'Bangalore, India',
-  organizationName: 'Green Earth Foundation',
-  bio: 'Leading environmental conservation efforts since 2015.',
-  createdAt: '2023-06-20',
-};
-
-const mockOpportunities: Opportunity[] = [
-  {
-    id: '1',
-    title: 'Community Recycling Drive',
-    description: 'Help sort and process recyclables at our monthly community drive.',
-    location: 'Downtown Community Center',
-    date: '2024-12-15',
-    status: 'open',
-    ngoId: '2',
-    ngoName: 'Green Earth Foundation',
-    requiredSkills: ['Sorting', 'Lifting'],
-    applicationsCount: 12,
-    createdAt: '2024-11-01',
-  },
-  {
-    id: '2',
-    title: 'Beach Cleanup Initiative',
-    description: 'Join us for a day of cleaning up our local beaches.',
-    location: 'Ocean Beach',
-    date: '2024-12-20',
-    status: 'open',
-    ngoId: '2',
-    ngoName: 'Green Earth Foundation',
-    requiredSkills: ['Outdoor Work', 'Team Player'],
-    applicationsCount: 8,
-    createdAt: '2024-11-05',
-  },
-];
 
 const mockApplications: Application[] = [];
 
@@ -120,17 +181,6 @@ const mockRecyclingBreakdown: RecyclingCategory[] = [
   { name: 'Electronics', count: 200, percentage: 5, color: 'hsl(0 72% 51%)' },
 ];
 
-// API functions with simulated delays
-export async function getCurrentUser(role?: UserRole): Promise<User> {
-  await delay(800);
-  return role === 'ngo' ? mockNgoUser : mockVolunteerUser;
-}
-
-export async function getOpportunities(): Promise<Opportunity[]> {
-  await delay(1000);
-  return mockOpportunities;
-}
-
 export async function getApplications(): Promise<Application[]> {
   await delay(900);
   return mockApplications;
@@ -161,5 +211,3 @@ export async function refreshToken(): Promise<{ success: boolean }> {
   return { success: true };
 }
 
-// Type export for role
-type UserRole = 'volunteer' | 'ngo';

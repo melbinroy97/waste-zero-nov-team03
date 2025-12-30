@@ -11,6 +11,7 @@ import {
   PlusCircle,
   Users,
   Leaf,
+  User,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -24,6 +25,7 @@ const volunteerNavItems = [
   { to: '/dashboard/volunteer/applications', icon: FileText, label: 'My Applications' },
   { to: '/dashboard/volunteer/messages', icon: MessageSquare, label: 'Messages' },
   { to: '/dashboard/volunteer/schedule', icon: Calendar, label: 'My Schedule' },
+  { to: '/dashboard/volunteer/profile', icon: User, label: 'My Profile' },
   { to: '/dashboard/volunteer/settings', icon: Settings, label: 'Settings' },
 ];
 
@@ -33,6 +35,7 @@ const ngoNavItems = [
   { to: '/dashboard/ngo/volunteers', icon: Users, label: 'Volunteers' },
   { to: '/dashboard/ngo/messages', icon: MessageSquare, label: 'Messages' },
   { to: '/dashboard/ngo/schedule', icon: Calendar, label: 'Schedule' },
+  { to: '/dashboard/ngo/profile', icon: User, label: 'My Profile' },
   { to: '/dashboard/ngo/settings', icon: Settings, label: 'Settings' },
 ];
 
@@ -40,7 +43,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user } = useAuth();
   const location = useLocation();
   
-  const navItems = user?.role === 'ngo' ? ngoNavItems : volunteerNavItems;
+  const navItems = user?.role === 'NGO' ? ngoNavItems : volunteerNavItems;
 
   return (
     <>

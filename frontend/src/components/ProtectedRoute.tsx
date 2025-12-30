@@ -29,7 +29,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
 
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
     // Redirect to appropriate dashboard based on role
-    const redirectPath = user.role === 'ngo' ? '/dashboard/ngo' : '/dashboard/volunteer';
+    const redirectPath = user.role === 'NGO' ? '/dashboard/ngo' : '/dashboard/volunteer';
     return <Navigate to={redirectPath} replace />;
   }
 

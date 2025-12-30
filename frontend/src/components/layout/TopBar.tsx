@@ -60,8 +60,8 @@ export function TopBar({ onMenuClick }: TopBarProps) {
               </Avatar>
               <div className="hidden sm:flex flex-col items-start">
                 <span className="text-sm font-medium">{user?.name}</span>
-                <Pill variant={user?.role === 'ngo' ? 'primary' : 'success'} size="sm">
-                  {user?.role === 'ngo' ? 'NGO' : 'Volunteer'}
+                <Pill variant={user?.role === 'NGO' ? 'primary' : 'success'} size="sm">
+                  {user?.role === 'NGO' ? 'NGO' : 'Volunteer'}
                 </Pill>
               </div>
             </Button>

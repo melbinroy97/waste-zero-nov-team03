@@ -26,7 +26,8 @@ app.use(express.json());
 // CORS for frontend
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    // Keep your array of origins so localhost:8080/5173 still work
+    origin: [process.env.CLIENT_URL || 'http://localhost:3000', 'http://localhost:8080', 'http://localhost:5173'],
     credentials: true
   })
 );
@@ -45,7 +46,6 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/opportunities', require('./routes/opportunityRoutes'));
 
-
 // health check
 app.get('/', (req, res) => {
   res.json({ message: 'WasteZero API up and running' });
@@ -63,6 +63,7 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () =>
   console.log(`Server running in ${process.env.NODE_ENV} on port ${PORT}`)
 );

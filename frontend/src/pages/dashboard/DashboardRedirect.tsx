@@ -9,7 +9,7 @@ export default function DashboardRedirect() {
 
   useEffect(() => {
     if (!isLoading && user) {
-      const path = user.role === 'ngo' ? '/dashboard/ngo' : '/dashboard/volunteer';
+      const path = user.role === 'NGO' ? '/dashboard/ngo' : '/dashboard/volunteer';
       navigate(path, { replace: true });
     }
   }, [user, isLoading, navigate]);
