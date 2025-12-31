@@ -45,6 +45,11 @@ const Opportunity = require('../models/Opportunity');
 
         const filter = {};
 
+        // If user is NGO, only show their own opportunities
+        if (req.user && req.user.role === 'NGO') {
+            filter.NGOID = req.user._id;
+        }
+
         // Filter by location
         if (location) {
             filter.location = { $regex: location, $options: "i" };
@@ -142,7 +147,7 @@ const Opportunity = require('../models/Opportunity');
         }
 
         // Authorization: only owning NGO can update
-        if (opportunity.NGOID.toString() !== req.user.id) {
+        if (opportunity.NGOID.toString() !== req.user._id.toString()) {
             return res.status(403).json({
                 success: false,
                 message: "Not authorized to update this opportunity",
@@ -219,7 +224,7 @@ const Opportunity = require('../models/Opportunity');
     }
 
     // Authorization: only owning NGO can delete
-    if (opportunity.NGOID.toString() !== req.user.id) {
+    if (opportunity.NGOID.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to delete this opportunity",

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { loginUser, registerUser } from '@/lib/api';
 import { Leaf, Mail, Lock, User, Building2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -56,15 +57,27 @@ export default function LoginPage() {
           return;
         }
 
-        // Simulate signup
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Real signup
+        const response = await registerUser({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: selectedRole.toUpperCase(),
+        });
+        
+        localStorage.setItem('token', response.token);
         await login(selectedRole);
+        
         alertToast.success({
           title: 'Account created!',
           description: `Welcome to WasteZero as ${selectedRole === 'ngo' ? 'an NGO' : 'a Volunteer'}`,
         });
       } else {
+        // Real login
+        const response = await loginUser(formData.email, formData.password);
+        localStorage.setItem('token', response.token);
         await login(selectedRole);
+
         alertToast.success({
           title: 'Welcome back!',
           description: `Logged in as ${selectedRole === 'ngo' ? 'NGO' : 'Volunteer'}`,
