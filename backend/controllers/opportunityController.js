@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const Opportunity = require('../models/Opportunity');
 
  const createOpportunity = async (req, res) => {

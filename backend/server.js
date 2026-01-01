@@ -26,8 +26,7 @@ app.use(express.json());
 // CORS for frontend
 app.use(
   cors({
-    // Keep your array of origins so localhost:8080/5173 still work
-    origin: [process.env.CLIENT_URL || 'http://localhost:3000', 'http://localhost:8080', 'http://localhost:5173'],
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
     credentials: true
   })
 );
@@ -39,17 +38,20 @@ const authLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again later'
 });
 
+// health check
+app.get('/', (req, res) => {
+  res.json({ message: 'WasteZero API up and running' });
+});
+
+
 app.use('/api/auth', authLimiter);
 
 // routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/opportunities', require('./routes/opportunityRoutes'));
-
-// health check
-app.get('/', (req, res) => {
-  res.json({ message: 'WasteZero API up and running' });
-});
+app.use("/api/matches", require("./routes/matchRoutes"));
+app.use("/api/messages", require("./routes/messageRoutes"));
 
 // global error handler (simple)
 app.use((err, req, res, next) => {
@@ -63,7 +65,24 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
+const http = require("http");
+const { Server } = require("socket.io");
 
-app.listen(PORT, () =>
-  console.log(`Server running in ${process.env.NODE_ENV} on port ${PORT}`)
-);
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
+});
+const socketHandler = require("./socket/socket");
+
+app.set("io", io);
+
+socketHandler(io);
+
+
+server.listen(PORT, () => {
+  console.log(`Server running with Socket.io on port ${PORT}`);
+});
