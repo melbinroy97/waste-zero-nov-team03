@@ -1,3 +1,7 @@
+import Chat from "@/pages/dashboard/Chat";
+import Matches from "@/pages/dashboard/Matches";
+import Messages from "@/pages/dashboard/Messages";
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,7 +37,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<LoginPage />} />
 
-            {/* Protected dashboard routes */}
+            {/* Dashboard redirect */}
             <Route
               path="/dashboard"
               element={
@@ -42,12 +46,12 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            
-            {/* VOLUNTEER DASHBOARD */}
+
+            {/* ================= VOLUNTEER DASHBOARD ================= */}
             <Route
               path="/dashboard/volunteer"
               element={
-                <ProtectedRoute allowedRoles={['VOLUNTEER']}>
+                <ProtectedRoute allowedRoles={["VOLUNTEER"]}>
                   <DashboardLayout />
                 </ProtectedRoute>
               }
@@ -55,31 +59,42 @@ const App = () => (
               <Route index element={<VolunteerDashboard />} />
               <Route path="opportunities" element={<OpportunitiesPage />} />
               <Route path="applications" element={<VolunteerDashboard />} />
-              <Route path="messages" element={<VolunteerDashboard />} />
+
+              {/* ✅ Milestone 3 */}
+              <Route path="matches" element={<Matches />} />
+
+              {/* ✅ FIXED MESSAGES ROUTING */}
+              <Route path="messages" element={<Messages />} />
+              <Route path="messages/:matchId" element={<Chat />} />
+
               <Route path="schedule" element={<VolunteerDashboard />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="settings" element={<VolunteerDashboard />} />
             </Route>
 
-            {/* NGO DASHBOARD */}
-            <Route
-              path="/dashboard/ngo"
-              element={
-                <ProtectedRoute allowedRoles={['NGO']}>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<NgoDashboard />} />
-              <Route path="opportunities" element={<OpportunitiesPage />} />
-              <Route path="opportunities/new" element={<CreateOpportunity />} />
-              <Route path="opportunities/:id/edit" element={<EditOpportunity />} />
-              <Route path="volunteers" element={<NgoDashboard />} />
-              <Route path="messages" element={<NgoDashboard />} />
-              <Route path="schedule" element={<NgoDashboard />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="settings" element={<NgoDashboard />} />
-            </Route>
+           {/* ================= NGO DASHBOARD ================= */}
+<Route
+  path="/dashboard/ngo"
+  element={
+    <ProtectedRoute allowedRoles={["NGO"]}>
+      <DashboardLayout />
+    </ProtectedRoute>
+  }
+>
+  <Route index element={<NgoDashboard />} />
+  <Route path="opportunities" element={<OpportunitiesPage />} />
+  <Route path="opportunities/new" element={<CreateOpportunity />} />
+  <Route path="opportunities/:id/edit" element={<EditOpportunity />} />
+  <Route path="volunteers" element={<NgoDashboard />} />
+
+  {/* ✅ FIXED NGO MESSAGES */}
+  <Route path="messages" element={<Messages />} />
+  <Route path="messages/:matchId" element={<Chat />} />
+
+  <Route path="schedule" element={<NgoDashboard />} />
+  <Route path="profile" element={<ProfilePage />} />
+  <Route path="settings" element={<NgoDashboard />} />
+</Route>
 
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />

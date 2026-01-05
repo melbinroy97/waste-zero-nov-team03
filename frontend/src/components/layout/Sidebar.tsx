@@ -22,6 +22,10 @@ interface SidebarProps {
 const volunteerNavItems = [
   { to: '/dashboard/volunteer', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/dashboard/volunteer/opportunities', icon: Search, label: 'Browse Opportunities' },
+
+
+  { to: '/dashboard/volunteer/matches', icon: Leaf, label: 'Matched Opportunities' },
+
   { to: '/dashboard/volunteer/applications', icon: FileText, label: 'My Applications' },
   { to: '/dashboard/volunteer/messages', icon: MessageSquare, label: 'Messages' },
   { to: '/dashboard/volunteer/schedule', icon: Calendar, label: 'My Schedule' },
