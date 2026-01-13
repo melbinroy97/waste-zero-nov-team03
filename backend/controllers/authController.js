@@ -24,7 +24,7 @@ const registerUser = async (req, res) => {
         .json({ message: 'Password must be at least 6 characters' });
     }
 
-    if (!['VOLUNTEER', 'NGO'].includes(role)) {
+    if (!['VOLUNTEER', 'NGO','ADMIN'].includes(role)) {
       return res.status(400).json({ message: 'Role must be VOLUNTEER or NGO' });
     }
 

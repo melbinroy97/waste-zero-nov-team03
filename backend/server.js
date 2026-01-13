@@ -53,6 +53,8 @@ app.use('/api/opportunities', require('./routes/opportunityRoutes'));
 app.use("/api/matches", require("./routes/matchRoutes"));
 app.use("/api/messages", require("./routes/messageRoutes"));
 
+app.use('/api/admin', require('./routes/adminRoutes'));
+
 // global error handler (simple)
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
