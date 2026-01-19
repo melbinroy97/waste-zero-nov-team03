@@ -22,11 +22,17 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
       select: false // never return password by default
     },
-    role: {
-      type: String,
-      enum: ['VOLUNTEER', 'NGO'],
-      required: [true, 'Role is required']
-    },
+   role: {
+  type: String,
+  enum: ["VOLUNTEER", "NGO", "ADMIN"],
+  default: "VOLUNTEER"
+},
+   status: {
+  type: String,
+  enum: ["ACTIVE", "SUSPENDED"],
+  default: "ACTIVE"
+},
+
     skills: {
       type: [String],
       default: []
