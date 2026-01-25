@@ -11,7 +11,7 @@ function Chat() {
   const socketRef = useRef(null);
 
   useEffect(() => {
-    socketRef.current = io("http://localhost:2000");
+    socketRef.current = io("http://localhost:5000");
 
     socketRef.current.emit("joinRoom", matchId);
 

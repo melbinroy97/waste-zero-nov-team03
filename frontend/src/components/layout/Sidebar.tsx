@@ -12,6 +12,7 @@ import {
   Users,
   Leaf,
   User,
+  Truck,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -43,11 +44,22 @@ const ngoNavItems = [
   { to: '/dashboard/ngo/settings', icon: Settings, label: 'Settings' },
 ];
 
+const adminNavItems = [
+  { to: '/dashboard/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
+  { to: '/dashboard/admin/users', icon: Users, label: 'Manage Users' },
+  { to: '/dashboard/admin/pickups', icon: Truck, label: 'Manage Pickups' },
+  { to: '/dashboard/admin/logs', icon: FileText, label: 'Admin Logs' },
+  { to: '/dashboard/admin/settings', icon: Settings, label: 'Settings' },
+];
+
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user } = useAuth();
   const location = useLocation();
   
-  const navItems = user?.role === 'NGO' ? ngoNavItems : volunteerNavItems;
+  // Determine nav items based on role
+  let navItems = volunteerNavItems;
+  if (user?.role === 'NGO') navItems = ngoNavItems;
+  if (user?.role === 'ADMIN') navItems = adminNavItems;
 
   return (
     <>

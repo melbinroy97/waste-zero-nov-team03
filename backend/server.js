@@ -11,6 +11,7 @@ connectDB();
 
 const app = express();
 
+
 // basic security
 app.use(helmet());
 app.disable('x-powered-by');
@@ -24,9 +25,17 @@ if (process.env.NODE_ENV === 'development') {
 app.use(express.json());
 
 // CORS for frontend
+// Allow typical frontend ports (3000, 8080, 5173 for Vite)
+const allowedOrigins = [
+  process.env.CLIENT_URL, 
+  'http://localhost:3000', 
+  'http://localhost:8080', 
+  'http://localhost:5173'
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: allowedOrigins,
     credentials: true
   })
 );
@@ -52,6 +61,7 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/opportunities', require('./routes/opportunityRoutes'));
 app.use("/api/matches", require("./routes/matchRoutes"));
 app.use("/api/messages", require("./routes/messageRoutes"));
+app.use('/api/pickups', require('./routes/pickupRoutes'));
 
 app.use('/api/admin', require('./routes/adminRoutes'));
 
@@ -66,7 +76,7 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message: msg });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const http = require("http");
 const { Server } = require("socket.io");
 
@@ -74,8 +84,9 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
+    credentials: true
   },
 });
 const socketHandler = require("./socket/socket");

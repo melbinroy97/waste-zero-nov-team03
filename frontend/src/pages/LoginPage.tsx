@@ -193,6 +193,18 @@ export default function LoginPage() {
               <Building2 className="h-4 w-4" />
               NGO
             </button>
+{/* Hidden Admin Toggle (Triple Click on 'Create account' needed usually, but exposing for dev) */}
+            <button
+                type="button"
+                onClick={() => setSelectedRole('admin')}
+                className={`py-3 px-4 rounded-xl border-2 text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                    selectedRole === 'admin'
+                        ? 'border-destructive bg-destructive/5 text-destructive'
+                         : 'border-border bg-card text-muted-foreground hover:border-muted-foreground'
+                }`}
+            >
+                ADMIN
+            </button> 
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">

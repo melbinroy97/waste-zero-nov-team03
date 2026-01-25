@@ -1,5 +1,72 @@
 const User = require('../models/User');
+const Pickup = require('../models/Pickup');
 const bcrypt = require('bcryptjs');
+
+// Helper for colors
+const getCategoryColor = (category) => {
+    const colors = {
+        'Plastic': 'hsl(217 91% 60%)',
+        'Paper': 'hsl(24 93% 58%)',
+        'Glass': 'hsl(142 66% 41%)',
+        'Metal': 'hsl(280 65% 55%)',
+        'Electronic Waste': 'hsl(0 72% 51%)',
+        'Organic Waste': 'hsl(120 40% 50%)',
+        'Other': 'hsl(0 0% 50%)'
+    };
+    return colors[category] || 'hsl(0 0% 50%)';
+};
+
+// GET /api/users/stats
+const getStats = async (req, res) => {
+  try {
+    const pickups = await Pickup.find({ user: req.user._id });
+
+    // Metrics
+    const totalPickups = pickups.length;
+    let itemsRecycled = 0;
+    const breakdown = {};
+
+    pickups.forEach(p => {
+        if(p.status === 'Completed') {
+            itemsRecycled += p.wasteTypes.length;
+            p.wasteTypes.forEach(type => {
+                breakdown[type] = (breakdown[type] || 0) + 1;
+            });
+        }
+    });
+
+    // Breakdown
+    const recyclingBreakdown = Object.keys(breakdown).map(k => ({
+        name: k,
+        count: breakdown[k],
+        percentage: 0,
+        color: getCategoryColor(k)
+    }));
+
+     const totalItems = recyclingBreakdown.reduce((acc, curr) => acc + curr.count, 0);
+    recyclingBreakdown.forEach(item => {
+        item.percentage = totalItems > 0 ? Math.round((item.count / totalItems) * 100) : 0;
+    });
+
+     res.json({
+        metrics: {
+            totalPickups,
+            pickupsTrend: 0, // No historical data yet
+            itemsRecycled: itemsRecycled * 10, // Simulating quantity per type
+            itemsTrend: 0,
+            volunteerHours: totalPickups * 2, // Simulating 2 hours per pickup
+            hoursTrend: 0,
+            co2Saved: parseFloat((itemsRecycled * 2.5).toFixed(1)), // 2.5kg per item
+            co2Trend: 0
+        },
+        recyclingBreakdown
+    });
+
+  } catch (error) {
+    console.error('getStats error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 // GET /api/users/me
 const getMe = async (req, res) => {
@@ -104,5 +171,6 @@ const changePassword = async (req, res) => {
 module.exports = {
   getMe,
   updateMe,
-  changePassword
+  changePassword,
+  getStats
 };

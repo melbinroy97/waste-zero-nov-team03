@@ -8,6 +8,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SocketProvider } from "@/contexts/SocketContext";
+import { ThemeProvider } from "@/components/theme-provider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 
@@ -21,16 +23,19 @@ import NgoDashboard from "@/pages/dashboard/NgoDashboard";
 import OpportunitiesPage from "@/pages/dashboard/OpportunitiesPage";
 import CreateOpportunity from "@/pages/dashboard/CreateOpportunity";
 import EditOpportunity from "@/pages/dashboard/EditOpportunity";
+import SchedulePickup from "@/pages/dashboard/SchedulePickup";
 import ProfilePage from "@/pages/dashboard/ProfilePage";
-
-const queryClient = new QueryClient();
+import AdminDashboard from "./pages/dashboard/AdminDashboard";
+import AdminUsers from "./pages/dashboard/AdminUsers"; import AdminPickups from './pages/dashboard/AdminPickups';const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
+      <SocketProvider>
+        <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
         <BrowserRouter>
           <Routes>
             {/* Public routes */}
@@ -67,7 +72,7 @@ const App = () => (
               <Route path="messages" element={<Messages />} />
               <Route path="messages/:matchId" element={<Chat />} />
 
-              <Route path="schedule" element={<VolunteerDashboard />} />
+              <Route path="schedule" element={<SchedulePickup />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="settings" element={<VolunteerDashboard />} />
             </Route>
@@ -91,16 +96,29 @@ const App = () => (
   <Route path="messages" element={<Messages />} />
   <Route path="messages/:matchId" element={<Chat />} />
 
-  <Route path="schedule" element={<NgoDashboard />} />
+  <Route path="schedule" element={<SchedulePickup />} />
   <Route path="profile" element={<ProfilePage />} />
   <Route path="settings" element={<NgoDashboard />} />
 </Route>
+
+            {/* Admin Routes */}
+            <Route path="/dashboard/admin" element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="pickups" element={<AdminPickups />} />
+            </Route>
 
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-      </TooltipProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </SocketProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

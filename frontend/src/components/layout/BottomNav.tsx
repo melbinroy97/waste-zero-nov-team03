@@ -8,6 +8,8 @@ import {
   MessageSquare,
   PlusCircle,
   Users,
+  Truck,
+  Leaf
 } from 'lucide-react';
 
 const volunteerItems = [
@@ -24,12 +26,21 @@ const ngoItems = [
   { to: '/dashboard/ngo/messages', icon: MessageSquare, label: 'Messages' },
 ];
 
+const adminItems = [
+  { to: '/dashboard/admin', icon: LayoutDashboard, label: 'Home', end: true },
+  { to: '/dashboard/admin/users', icon: Users, label: 'Users' },
+  { to: '/dashboard/admin/pickups', icon: Truck, label: 'Pickups' },
+  { to: '/dashboard/admin/settings', icon: Leaf, label: 'Settings' },
+];
+
 export function BottomNav() {
   const { user } = useAuth();
-  const items = user?.role === 'ngo' ? ngoItems : volunteerItems;
+  let items = volunteerItems;
+  if (user?.role === 'NGO') items = ngoItems;
+  if (user?.role === 'ADMIN') items = adminItems;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t border-border bg-card/95 backdrop-blur-sm">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t border-border bg-card/95 backdrop-blur-sm pb-safe">
       <div className="flex items-center justify-around">
         {items.map((item) => (
           <NavLink

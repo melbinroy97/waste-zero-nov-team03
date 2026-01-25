@@ -72,6 +72,7 @@ export async function getOpportunities(): Promise<Opportunity[]> {
   });
   if (!res.ok) throw new Error('Failed to fetch opportunities');
   const json = await res.json();
+  if (Array.isArray(json)) return json;
   return json.data || [];
 }
 
@@ -187,27 +188,108 @@ export async function getApplications(): Promise<Application[]> {
 }
 
 export async function getMessages(): Promise<Message[]> {
-  await delay(700);
-  return mockMessages;
+  try {
+    const res = await fetch(`${API_URL}/messages/conversations`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch messages');
+    const json = await res.json();
+    
+    // Handle specific 'data' wrapper or direct array
+    const data = json.data || (Array.isArray(json) ? json : []);
+
+    return data.map((conv: any) => ({
+      id: conv.lastMessage?._id || conv._id,
+      senderId: conv._id,
+      senderName: conv.userDetails?.name || 'Unknown',
+      senderAvatar: undefined, 
+      content: conv.lastMessage?.content || '',
+      timestamp: conv.lastMessage?.createdAt || new Date().toISOString(),
+      read: !!conv.lastMessage?.read 
+    }));
+  } catch (error) {
+    console.error(error);
+    return mockMessages;
+  }
 }
 
 export async function getUpcomingPickups(): Promise<Pickup[]> {
-  await delay(850);
-  return mockPickups;
+  try {
+    const res = await fetch(`${API_URL}/pickups/my`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch pickups');
+    const json = await res.json();
+    
+    // Filter for upcoming (Pending or Scheduled) an map to frontend format
+    const rawData = json.data || (Array.isArray(json) ? json : []);
+    const filtered = rawData.filter((p: any) => p.status === 'Pending' || p.status === 'Scheduled');
+    
+    return filtered.map((p: any) => ({
+      id: p._id,
+      location: `${p.address}, ${p.city}`,
+      date: p.pickupDate,
+      time: p.timeSlot,
+      status: p.status === 'Pending' ? 'scheduled' : p.status.toLowerCase(),
+      itemsCount: p.wasteTypes ? p.wasteTypes.length : 0,
+    }));
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+
+export async function getAllPickups(): Promise<any[]> {
+  const res = await fetch(`${API_URL}/pickups`, {
+    headers: getHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch pickups');
+  const json = await res.json();
+  return json.data || (Array.isArray(json) ? json : []);
+}
+
+export async function updatePickupStatus(id: string, status: string): Promise<any> {
+    const res = await fetch(`${API_URL}/pickups/${id}/status`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ status }),
+    });
+    if (!res.ok) throw new Error('Failed to update pickup status');
+    return res.json();
 }
 
 export async function getMetrics(): Promise<Metrics> {
-  await delay(600);
-  return mockMetrics;
+  try {
+    const res = await fetch(`${API_URL}/users/stats`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch metrics');
+    const data = await res.json();
+    return data.metrics;
+  } catch (error) {
+    console.error(error);
+    return mockMetrics;
+  }
 }
 
 export async function getRecyclingBreakdown(): Promise<RecyclingCategory[]> {
-  await delay(750);
-  return mockRecyclingBreakdown;
+  try {
+    const res = await fetch(`${API_URL}/users/stats`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch recycling breakdown');
+    const data = await res.json();
+    return data.recyclingBreakdown;
+  } catch (error) {
+    console.error(error);
+    return mockRecyclingBreakdown;
+  }
 }
 
 export async function refreshToken(): Promise<{ success: boolean }> {
   await delay(500);
   return { success: true };
 }
+
 

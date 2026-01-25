@@ -9,8 +9,13 @@ export default function DashboardRedirect() {
 
   useEffect(() => {
     if (!isLoading && user) {
-      const path = user.role === 'NGO' ? '/dashboard/ngo' : '/dashboard/volunteer';
-      navigate(path, { replace: true });
+      if (user.role === 'ADMIN') {
+        navigate('/dashboard/admin', { replace: true });
+      } else if (user.role === 'NGO') {
+        navigate('/dashboard/ngo', { replace: true });
+      } else {
+        navigate('/dashboard/volunteer', { replace: true });
+      }
     }
   }, [user, isLoading, navigate]);
 

@@ -7,15 +7,17 @@ import { MetricsStrip } from '@/components/dashboard/MetricsStrip';
 import { OpportunitiesList } from '@/components/dashboard/OpportunitiesList';
 import { UpcomingPickups } from '@/components/dashboard/UpcomingPickups';
 import { RecyclingBreakdown } from '@/components/dashboard/RecyclingBreakdown';
-import { getOpportunities, getUpcomingPickups, getMetrics, getRecyclingBreakdown } from '@/lib/api';
+import { MessagesPreview } from '@/components/dashboard/MessagesPreview';
+import { getOpportunities, getUpcomingPickups, getMetrics, getRecyclingBreakdown, getMessages } from '@/lib/api';
 import { alertToast } from '@/components/ui/AlertToast';
-import type { Opportunity, Pickup, Metrics, RecyclingCategory } from '@/types';
+import type { Opportunity, Pickup, Metrics, RecyclingCategory, Message } from '@/types';
 
 export default function NgoDashboard() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [pickups, setPickups] = useState<Pickup[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [metrics, setMetrics] = useState<Metrics | undefined>();
   const [recycling, setRecycling] = useState<RecyclingCategory[]>([]);
 
@@ -23,14 +25,16 @@ export default function NgoDashboard() {
     async function loadData() {
       setIsLoading(true);
       try {
-        const [opps, picks, mets, recy] = await Promise.all([
+        const [opps, picks, msgs, mets, recy] = await Promise.all([
           getOpportunities(),
           getUpcomingPickups(),
+          getMessages(),
           getMetrics(),
           getRecyclingBreakdown(),
         ]);
         setOpportunities(opps);
         setPickups(picks);
+        setMessages(msgs);
         setMetrics(mets);
         setRecycling(recy);
       } catch (error) {
@@ -82,6 +86,7 @@ export default function NgoDashboard() {
 
         {/* Right Column */}
         <div className="space-y-6">
+          <MessagesPreview messages={messages} isLoading={isLoading} />
           <RecyclingBreakdown categories={recycling} isLoading={isLoading} />
         </div>
       </div>

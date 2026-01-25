@@ -8,9 +8,13 @@ const User = require("../models/User");
  */
 exports.getVolunteerMatches = async (req, res) => {
   try {
-    // Role check
-    if (req.user.role !== "VOLUNTEER") {
-      return res.status(403).json({ message: "Access denied" });
+    console.log(`[getVolunteerMatches] Request from user: ${req.user._id}, role: ${req.user.role}`);
+
+    // Role check (case-insensitive)
+    if (req.user.role.toUpperCase() !== "VOLUNTEER") {
+      return res.status(403).json({ 
+        message: `Access denied. matches are for Volunteers only. Your role is: ${req.user.role}` 
+      });
     }
 
     const volunteer = req.user;
